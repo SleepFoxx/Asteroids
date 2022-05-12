@@ -1,6 +1,7 @@
 #importy kniznic
 import math
 import random
+from turtle import pos
 
 import pyglet
 from pyglet import gl
@@ -24,6 +25,10 @@ delay_shooting = 0.4
 laserlifetime = 45
 laserspeed = 200
 
+shield_duration = 5
+pos_x = 0
+pos_y = 0
+rotation = 0
 #skore counter
 score = 0
 
@@ -116,7 +121,7 @@ class Spaceship(SpaceObject):
     def __init__(self, sprite, x ,y):
         super().__init__(sprite,x,y)
         self.laser_ready = True
-        
+        self.shield = False
         #naloadovanie obrazku flamu
         flame_sprite = pyglet.image.load("Assetss/PNG/Effects/fire05.png")
         set_anchor_of_image_to_center(flame_sprite)
@@ -177,7 +182,8 @@ class Spaceship(SpaceObject):
             self.shoot()
             self.laser_ready = False
             pyglet.clock.schedule_once(self.reload, delay_shooting)
-            
+        if self.shield == True:
+            self.get_position()
 
         #vyberie vsetky objekty okrem seba
         for obj in [o for o in game_objects if o != self]:
@@ -186,6 +192,30 @@ class Spaceship(SpaceObject):
             if d < self.radius + obj.radius:
                 obj.hit_by_spaceship(self)
                 break
+    #funkcia stitu
+    def get_shield(self):
+        #nastavenie stitu na True
+        self.shield = True
+        #nacitanie obrazku
+        img = pyglet.image.load("Assetss/PNG/Effects/shield3.png")
+        #nastavenie obrazku do stredu
+        set_anchor_of_image_to_center(img)
+        #definovanie shieldu
+        shield = Shield(img,self.sprite.x,self.sprite.y)
+        #zapisanie stitu do game objektov
+        game_objects.append(shield)
+        pyglet.clock.schedule_once(self.shield_off, shield_duration)
+
+    #funkcia vypnutie stitu
+    def shield_off(self, dt):
+        self.shield = False
+    #funckcia pozicie stitu
+    def get_position(self):
+        global pos_x, pos_y, rotation
+        pos_x = self.sprite.x
+        pos_y = self.sprite.y
+        rotation = self.rotation
+        
 
     #metoda zodpovedna za reset pozicie 
     def reset(self):
@@ -202,8 +232,14 @@ class Spaceship(SpaceObject):
 class Asteroid(SpaceObject):
     #metoda pri kolizi lode a asteroidu
     def hit_by_spaceship(self, ship):
-        pressed_keyboards.clear()
-        ship.reset()
+        global score
+        if ship.shield == False:
+            pressed_keyboards.clear()
+            ship.reset()
+            ship.get_shield()
+            score -= 50
+            if score <= 0:
+                score = 0
         self.delete()
 
     #metoda pri kolizi asteroidu a laseru
@@ -235,6 +271,23 @@ class Laser(SpaceObject):
                 obj.hit_by_laser(self)
                 break
     
+#trieda stit
+
+class Shield(SpaceObject):
+    def __init__(self, sprite, x, y):
+        super().__init__(sprite, x, y)
+        self.shield_duration = shield_duration
+    
+    def tick(self, dt):
+        global pos_x, pos_y
+        super().tick(dt)
+        self.sprite.x = pos_x
+        self.sprite.y = pos_y
+        self.shield_duration -= dt
+        if self.shield_duration <= 0:
+            self.delete()
+        
+
 
 
 #trieda "hra"

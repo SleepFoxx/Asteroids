@@ -123,7 +123,7 @@ class Spaceship(SpaceObject):
         self.laser_ready = True
         self.shield = False
         #naloadovanie obrazku flamu
-        flame_sprite = pyglet.image.load("Assetss/PNG/Effects/fire05.png")
+        flame_sprite = pyglet.image.load("Assetss/PNG/Effects/fire19.png")
         set_anchor_of_image_to_center(flame_sprite)
         self.flame = pyglet.sprite.Sprite(flame_sprite,batch=batch)
         self.flame.visible = False
@@ -228,6 +228,106 @@ class Spaceship(SpaceObject):
     def reload(self,dt):
         self.laser_ready = True
 
+class Spaceship2(Spaceship):
+    def __init__(self, sprite, x, y):
+        #prebera atributy z dedenej classy 
+        super().__init__(sprite, x, y)
+        #nacitanie fotky flamu
+        flame_sprite = pyglet.image.load("Assetss/PNG/Effects/fire19.png")
+        #vycentrovanie
+        set_anchor_of_image_to_center(flame_sprite)
+        #zobrazenie flamu
+        self.flame = pyglet.sprite.Sprite(flame_sprite,batch=batch)
+        self.flame.visible = False
+    
+    def shoot(self):
+        #nacitanie obrazku
+        img = pyglet.image.load("Assetss/PNG/Lasers/laserGreen10.png")
+        #vycentrovanie
+        set_anchor_of_image_to_center(img)
+        #vypocty na laser
+        laser_x = self.sprite.x + math.cos(self.rotation) * self.radius
+        laser_y = self.sprite.y + math.sin(self.rotation) * self.radius
+        #callnutie laseru
+        laser = Laser(img,laser_x,laser_y)
+        laser.rotation = self.rotation
+        #pridanie laseru do game_objects
+        game_objects.append(laser)
+
+    def tick(self, dt):
+        #posunutie objektu podla rychlosti
+        self.sprite.x += dt * self.x_speed
+        self.sprite.y += dt * self.y_speed
+        self.sprite.rotation = 90 - math.degrees(self.rotation)
+        #kontrola ci sme na kraji
+        self.checkBoundaries()
+        #zrychlenie podla konstant pri zmacknuti UP (sipky hore)
+        if 'UP' in pressed_keyboards:
+            self.x_speed = self.x_speed + dt * ACCELERATION * math.cos(self.rotation)
+            self.y_speed = self.y_speed + dt * ACCELERATION * math.sin(self.rotation)
+
+            #flame pozicia a zobrazenie
+            self.flame.x = self.sprite.x - math.cos(self.rotation) * self.radius
+            self.flame.y = self.sprite.y - math.sin(self.rotation) * self.radius
+            self.flame.rotation = self.sprite.rotation
+            self.flame.visible = True
+        #ak nie je UP (sipka hore) v pressed_keyboards tak flame neni vidno
+        else:
+            self.flame.visible = False
+
+        #pri zmacknuti DOWN (sipka dole) sa rychlost znizuje
+        if 'DOWN' in pressed_keyboards:
+            self.x_speed = self.x_speed - dt * ACCELERATION * math.cos(self.rotation)
+            self.y_speed = self.y_speed - dt * ACCELERATION * math.sin(self.rotation)
+
+        #otocenie dolava pri zmacknuti LEFT (sipka dolava)
+        if 'LEFT' in pressed_keyboards:
+            self.rotation += ROTATION_SPEED
+
+        #otocenie doprava pri zmacknuti RIGHT (sipka doprava)
+        if 'RIGHT' in pressed_keyboards:
+            self.rotation -= ROTATION_SPEED
+
+        #"rucna brzda" pri zmacknuti praveho Shift
+        if 'RSHIFT' in pressed_keyboards:
+            self.x_speed = 0
+            self.y_speed = 0
+
+        #vystrelenie laseru pri zmacknuti praveho ctrl + zapnutie "cooldownu na laser"
+        if "CTRL" in pressed_keyboards and self.laser_ready:
+            self.shoot()
+            self.laser_ready = False
+            pyglet.clock.schedule_once(self.reload, delay_shooting)
+        if self.shield == True:
+            self.get_position()
+
+        #vyberie vsetky objekty okrem seba
+        for obj in [o for o in game_objects if o != self]:
+            # d = distance medzi objektami
+            d = self.distance(obj)
+            if d < self.radius + obj.radius:
+                obj.hit_by_spaceship(self)
+                break
+    #definicia dostania stitu, preberame z dedenej triedy
+    def get_shield(self):
+        super().get_shield()
+    #shield off
+    def shield_off(self, dt):
+        super().shield_off(dt)
+    #get position
+    def get_position(self):
+        super().get_position()
+    #reset 
+    def reset(self):
+        super().reset()
+    #reload
+    def reload(self, dt):
+        super().reload(dt)
+    
+    
+
+
+
 #trieda Asteroid
 class Asteroid(SpaceObject):
     #metoda pri kolizi lode a asteroidu
@@ -311,7 +411,9 @@ class Game:
     def init_objects(self):
         #Vytvorenie lode
         spaceShip = Spaceship(self.playerShip_image, WIDTH // 2, HEIGHT//2)
+        spaceShip2 = Spaceship2(self.playerShip_image, WIDTH // 2, HEIGHT//2)
         game_objects.append(spaceShip)
+        game_objects.append(spaceShip2)
 
         #Nastavenie pozadia a prescalovanie
         self.background = pyglet.sprite.Sprite(self.background_image)
@@ -378,31 +480,55 @@ class Game:
     def key_press(self, symbol, modifikatory):
         if symbol == key.W:
             pressed_keyboards.add('W')
+        if symbol == key.UP:
+            pressed_keyboards.add('UP')
         if symbol == key.S:
             pressed_keyboards.add('S')
+        if symbol == key.DOWN:
+            pressed_keyboards.add('DOWN')
         if symbol == key.A:
             pressed_keyboards.add('A')
+        if symbol == key.LEFT:
+            pressed_keyboards.add('LEFT')
         if symbol == key.D:
             pressed_keyboards.add('D')
+        if symbol == key.RIGHT:
+            pressed_keyboards.add('RIGHT')
         if symbol == key.LSHIFT:
             pressed_keyboards.add('SHIFT')
+        if symbol == key.RSHIFT:
+            pressed_keyboards.add('RSHIFT')
         if symbol == key.SPACE:
             pressed_keyboards.add("SPACE")
+        if symbol == key.RCTRL:
+            pressed_keyboards.add("CTRL")
 
     #spracovanie klavesovych "vystupov"
     def key_release(self, symbol, modifikatory):
         if symbol == key.W:
             pressed_keyboards.discard('W')
+        if symbol == key.UP:
+            pressed_keyboards.discard('UP')
         if symbol == key.S:
             pressed_keyboards.discard('S')
+        if symbol == key.DOWN:
+            pressed_keyboards.discard('DOWN')
         if symbol == key.A:
             pressed_keyboards.discard('A')
+        if symbol == key.LEFT:
+            pressed_keyboards.discard('LEFT')
         if symbol == key.D:
             pressed_keyboards.discard('D')
+        if symbol == key.RIGHT:
+            pressed_keyboards.discard('RIGHT')
         if symbol == key.LSHIFT:
             pressed_keyboards.discard('SHIFT')
+        if symbol == key.RSHIFT:
+            pressed_keyboards.discard('RSHIFT')
         if symbol == key.SPACE:
             pressed_keyboards.discard("SPACE")
+        if symbol == key.RCTRL:
+            pressed_keyboards.discard("CTRL")
 
     #metoda update
     def update(self, dt):

@@ -185,6 +185,9 @@ class Spaceship(SpaceObject):
         if self.shield == True:
             self.get_position()
 
+        #ukoncenie hry pri zmacknutom escape
+        if 'ESCAPE' in pressed_keyboards:
+            pyglet.app.exit()
         #vyberie vsetky objekty okrem seba
         for obj in [o for o in game_objects if o != self]:
             # d = distance medzi objektami
@@ -301,6 +304,9 @@ class Spaceship2(Spaceship):
         if self.shield == True:
             self.get_position()
 
+        #zatvorenie hry pri stlaceni escape 
+        if 'ESCAPE' in pressed_keyboards:
+            pyglet.app.exit()
         #vyberie vsetky objekty okrem seba
         for obj in [o for o in game_objects if o != self]:
             # d = distance medzi objektami
@@ -400,7 +406,9 @@ class Game:
     #nacitanie obrazkov hry
     def load_resources(self):
         self.playerShip_image = pyglet.image.load('Assetss/PNG/playerShip1_blue.png')
+        self.playerShip2_image = pyglet.image.load('Assetss/PNG/playerShip1_red.png')
         set_anchor_of_image_to_center(self.playerShip_image)
+        set_anchor_of_image_to_center(self.playerShip2_image)
         self.background_image = pyglet.image.load('Assetss/Backgrounds/black.png')
         self.asteroid_images = ['Assetss/PNG/Meteors/meteorGrey_big1.png',
                            'Assetss/PNG/Meteors/meteorGrey_med1.png',
@@ -410,8 +418,8 @@ class Game:
     #vytvorenie objektu hry
     def init_objects(self):
         #Vytvorenie lode
-        spaceShip = Spaceship(self.playerShip_image, WIDTH // 2, HEIGHT//2)
-        spaceShip2 = Spaceship2(self.playerShip_image, WIDTH // 2, HEIGHT//2)
+        spaceShip = Spaceship(self.playerShip_image, WIDTH // 3 , HEIGHT//2)
+        spaceShip2 = Spaceship2(self.playerShip2_image, WIDTH // 3 * 2, HEIGHT//2)
         game_objects.append(spaceShip)
         game_objects.append(spaceShip2)
 
@@ -502,6 +510,8 @@ class Game:
             pressed_keyboards.add("SPACE")
         if symbol == key.RCTRL:
             pressed_keyboards.add("CTRL")
+        if symbol == key.ESCAPE:
+            pressed_keyboards.add("ESCAPE")
 
     #spracovanie klavesovych "vystupov"
     def key_release(self, symbol, modifikatory):
@@ -529,6 +539,8 @@ class Game:
             pressed_keyboards.discard("SPACE")
         if symbol == key.RCTRL:
             pressed_keyboards.discard("CTRL")
+        if symbol == key.ESCAPE:
+            pressed_keyboards.discard("ESCAPE")
 
     #metoda update
     def update(self, dt):

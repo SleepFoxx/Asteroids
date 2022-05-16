@@ -21,17 +21,20 @@ game_objects = []
 batch = pyglet.graphics.Batch() #ZOZNAM SPRITOV PRE ZJEDNODUŠENÉ VYKRESLENIE
 pressed_keyboards = set()       #MNOŽINA ZMAČKNUTÝCH KLÁVES
 
+end_label = "Vyhral si! \n Tu mas trofej :]"
 delay_shooting = 0.4
 laserlifetime = 45
 laserspeed = 200
+pewpew = pyglet.media.load("Assetss/pew.wav", streaming=False)
+boom = pyglet.media.load("Assetss/boom.wav", streaming=False)
 
 shield_duration = 5
 pos_x = 0
 pos_y = 0
 rotation = 0
 #skore counter
-score = 0
-
+score = 490
+shield = False
 #funkcie
 
 #vycentrovanie obrazka na stred
@@ -140,6 +143,7 @@ class Spaceship(SpaceObject):
         laser.rotation = self.rotation
 
         game_objects.append(laser)
+        pewpew.play()
     
     #vykona sa metoda tick 60x za sekundu
     def tick(self, dt):
@@ -256,6 +260,8 @@ class Spaceship2(Spaceship):
         laser.rotation = self.rotation
         #pridanie laseru do game_objects
         game_objects.append(laser)
+        #zvuk
+        pewpew.play()
 
     def tick(self, dt):
         #posunutie objektu podla rychlosti
@@ -400,6 +406,7 @@ class Shield(SpaceObject):
 class Game:
     #kontruktor
     def __init__(self):
+        global game_objects
         self.window = None
         game_objects = []
 
@@ -410,6 +417,7 @@ class Game:
         set_anchor_of_image_to_center(self.playerShip_image)
         set_anchor_of_image_to_center(self.playerShip2_image)
         self.background_image = pyglet.image.load('Assetss/Backgrounds/black.png')
+        self.endbackground_image = pyglet.image.load('Assetss/Backgrounds/trophy.png')
         self.asteroid_images = ['Assetss/PNG/Meteors/meteorGrey_big1.png',
                            'Assetss/PNG/Meteors/meteorGrey_med1.png',
                            'Assetss/PNG/Meteors/meteorGrey_small1.png',
@@ -425,6 +433,7 @@ class Game:
 
         #Nastavenie pozadia a prescalovanie
         self.background = pyglet.sprite.Sprite(self.background_image)
+        self.endbackground = pyglet.sprite.Sprite(self.endbackground_image)
         self.background.scale_x = 6
         self.background.scale_y = 4
 
@@ -458,13 +467,26 @@ class Game:
 
     #metoda ktora sa vola n a "on_draw" stale a vykresluje vsetko v hre
     def draw_game(self):
-        global score,scoreLabel
+        global score, scoreLabel, endGame
         # Vymaže aktualny obsah okna
         self.window.clear()
         # Vykreslenie pozadia
         self.background.draw()
         scoreLabel = pyglet.text.Label(text=str(score), font_size=40,x = 1150, y = 760, anchor_x='right', anchor_y='center')
-        scoreLabel.draw()
+        if score >= 500:
+            endGame = pyglet.text.Label(text= "Vyhral si", font_size = 60, color = (255,0,0,255), x = WIDTH // 2, y = HEIGHT // 2, anchor_x='center', anchor_y='center')
+            endGame2 = pyglet.text.Label(text= "Tu mas trofej", font_size = 60, color = (255,0,0,255), x = WIDTH // 2, y = HEIGHT // 2 - 100, anchor_x='center', anchor_y='center')
+            game_objects.clear()
+            self.window.clear()
+            self.endbackground.x = WIDTH // 3
+            self.endbackground.y = HEIGHT // 3
+            self.endbackground.draw()
+            endGame.draw()
+            endGame2.draw()
+            boom.play()
+        else:
+            scoreLabel.draw()
+        
         
         #vykreslenie pomocnych koliecok 
         for o in game_objects:

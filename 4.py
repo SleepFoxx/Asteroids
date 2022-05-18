@@ -421,7 +421,7 @@ class Game:
         set_anchor_of_image_to_center(self.playerShip2_image)
         self.background_image = pyglet.image.load('Assetss/Backgrounds/black.png')
         self.endbackground_image = pyglet.image.load('Assetss/Backgrounds/trophy.png')
-        self.losebackground_image = pyglet.image.load('Assetss/end.png')
+        self.losebackground_image = pyglet.image.load('end.png')
         self.asteroid_images = ['Assetss/PNG/Meteors/meteorGrey_big1.png',
                            'Assetss/PNG/Meteors/meteorGrey_med1.png',
                            'Assetss/PNG/Meteors/meteorGrey_small1.png',

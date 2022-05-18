@@ -340,8 +340,32 @@ class Spaceship2(Spaceship):
     
     
 
+"""
+#trieda UFO
+class Ufo(Spaceship):
+    #metoda pri kolizi lode a ufa
+    def hit_by_spaceship(self, ship):
+        global score, lifes
+        if ship.shield == False:
+            pressed_keyboards.clear()
+            ship.reset()
+            ship.get_shield()
+            score -= 50
+            lifes -= 1
+            if score <= 0:
+                score = 0
+        self.delete()
 
+    #metoda pri kolizi ufa a laseru
+    def hit_by_laser(self, laser):
+        global score
+        self.delete()
+        laser.delete()
+        score += 50
 
+    def shoot(self):
+        super().shoot()
+"""
 #trieda Asteroid
 class Asteroid(SpaceObject):
     #metoda pri kolizi lode a asteroidu
@@ -385,7 +409,19 @@ class Laser(SpaceObject):
             if d < self.radius + obj.radius:
                 obj.hit_by_laser(self)
                 break
-    
+"""
+#trieda Laser2 vyuzivana v UFE
+class Laser2(Laser):
+    def __init__(self, sprite, x, y):
+        super().__init__(sprite, x, y)
+    def tick(self, dt):
+        super().tick(dt)
+        for obj in [o for o in game_objects if o != self]:
+            d = self.distance(obj)
+            if d < self.radius + obj.radius:
+                obj.hit_by_laser(self)
+                break
+            """
 #trieda stit
 
 class Shield(SpaceObject):
@@ -422,6 +458,12 @@ class Game:
         self.background_image = pyglet.image.load('Assetss/Backgrounds/black.png')
         self.endbackground_image = pyglet.image.load('Assetss/Backgrounds/trophy.png')
         self.losebackground_image = pyglet.image.load('end.png')
+        """
+        self.ufo_images = ['Assetss/PNG/ufoBlue.png',
+                            'Assetss/PNG/ufoGreen.png',
+                            'Assetss/PNG/ufoRed.png',
+                             'Assetss/PNG/ufoYellow.png']
+                             """
         self.asteroid_images = ['Assetss/PNG/Meteors/meteorGrey_big1.png',
                            'Assetss/PNG/Meteors/meteorGrey_med1.png',
                            'Assetss/PNG/Meteors/meteorGrey_small1.png',
@@ -443,11 +485,16 @@ class Game:
         self.background.scale_y = 4
 
         
-
+        
         #Vytvorenie Meteoritov
         self.create_asteroids(count=7)
-        #Pridavanie novych asteroidoch každych 10 sekund
+        self.create_asteroids(count=(random.randint(1, 5)))
+        #Pridavanie novych asteroidoch každych 6 sekund
         pyglet.clock.schedule_interval(self.create_asteroids, 6, 1)
+        #pridavanie novych UF kazdych 6 sekund
+        #pyglet.clock.schedule_interval(self.create_ufo, 6, 1)
+        
+
 
     def create_asteroids(self, dt=0, count=1):
         #vytvorenie poctu asteroidov
@@ -469,6 +516,30 @@ class Game:
             #Temp asteroid object
             asteroid = Asteroid(img, position[0], position[1], tmp_speed_x, tmp_speed_y)
             game_objects.append(asteroid)
+    """
+    #vytvorenie Ufa
+    def create_ufo(self, dt=0, count=1):
+    #vytvorenie poctu UF
+        for i in range(count):
+             #Výber ufa náhodne
+            img = pyglet.image.load(random.choice(self.ufo_images))
+            set_anchor_of_image_to_center(img)
+
+         #Nastavenie pozície na okraji obrazovky náhodne
+        positionn = [0, 0]
+        dimensionn = [WIDTH, HEIGHT]
+        axiss = random.choice([0, 1])
+        positionn[axiss] = random.uniform(0, dimensionn[axiss])
+
+         #Nastavenie rýchlosti
+        tmp_speed_xx = random.uniform(-100, 100)
+        tmp_speed_yy = random.uniform(-100, 100)
+
+        #Temp ufo object
+        UFO = Ufo(img, positionn[0], positionn[1])
+        game_objects.append(UFO) 
+        """
+
     
     #definicia zivotov
     def game_lifes(self):

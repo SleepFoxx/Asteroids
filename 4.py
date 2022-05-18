@@ -1,6 +1,7 @@
 #importy kniznic
 import math
 import random
+from tkinter import CENTER
 from turtle import pos
 
 import pyglet
@@ -33,6 +34,7 @@ pos_x = 0
 pos_y = 0
 rotation = 0
 #skore counter
+lifes = 3
 score = 490
 shield = False
 #funkcie
@@ -344,12 +346,13 @@ class Spaceship2(Spaceship):
 class Asteroid(SpaceObject):
     #metoda pri kolizi lode a asteroidu
     def hit_by_spaceship(self, ship):
-        global score
+        global score, lifes
         if ship.shield == False:
             pressed_keyboards.clear()
             ship.reset()
             ship.get_shield()
             score -= 50
+            lifes -= 1
             if score <= 0:
                 score = 0
         self.delete()
@@ -418,6 +421,7 @@ class Game:
         set_anchor_of_image_to_center(self.playerShip2_image)
         self.background_image = pyglet.image.load('Assetss/Backgrounds/black.png')
         self.endbackground_image = pyglet.image.load('Assetss/Backgrounds/trophy.png')
+        self.losebackground_image = pyglet.image.load('Assetss/end.png')
         self.asteroid_images = ['Assetss/PNG/Meteors/meteorGrey_big1.png',
                            'Assetss/PNG/Meteors/meteorGrey_med1.png',
                            'Assetss/PNG/Meteors/meteorGrey_small1.png',
@@ -434,6 +438,7 @@ class Game:
         #Nastavenie pozadia a prescalovanie
         self.background = pyglet.sprite.Sprite(self.background_image)
         self.endbackground = pyglet.sprite.Sprite(self.endbackground_image)
+        self.losebackground = pyglet.sprite.Sprite(self.losebackground_image)
         self.background.scale_x = 6
         self.background.scale_y = 4
 
@@ -464,6 +469,18 @@ class Game:
             #Temp asteroid object
             asteroid = Asteroid(img, position[0], position[1], tmp_speed_x, tmp_speed_y)
             game_objects.append(asteroid)
+    
+    #definicia zivotov
+    def game_lifes(self):
+        global lifes
+        life = pyglet.image.load("Assetss/PNG/UI/playerLife1_orange.png")
+        width = 15
+        for i in range(lifes):
+            life_sprite = pyglet.sprite.Sprite(life,width,HEIGHT - 40)
+            life_sprite.draw()
+            width += 35
+    
+
 
     #metoda ktora sa vola n a "on_draw" stale a vykresluje vsetko v hre
     def draw_game(self):
@@ -473,6 +490,7 @@ class Game:
         # Vykreslenie pozadia
         self.background.draw()
         scoreLabel = pyglet.text.Label(text=str(score), font_size=40,x = 1150, y = 760, anchor_x='right', anchor_y='center')
+        self.game_lifes()
         if score >= 500:
             endGame = pyglet.text.Label(text= "Vyhral si", font_size = 60, color = (255,0,0,255), x = WIDTH // 2, y = HEIGHT // 2, anchor_x='center', anchor_y='center')
             endGame2 = pyglet.text.Label(text= "Tu mas trofej", font_size = 60, color = (255,0,0,255), x = WIDTH // 2, y = HEIGHT // 2 - 100, anchor_x='center', anchor_y='center')
@@ -484,6 +502,14 @@ class Game:
             endGame.draw()
             endGame2.draw()
             boom.play()
+        elif lifes == 0:
+            lose = pyglet.text.Label(text="Prehral si", font_size= 60, color= (0,255,0,255), x = WIDTH // 2, y = HEIGHT // 2, anchor_x = 'center', anchor_y= 'center')
+            game_objects.clear()
+            self.window.clear()
+            self.losebackground.x = WIDTH // 3
+            self.losebackground.y = HEIGHT // 3
+            self.losebackground.draw()
+            lose.draw()
         else:
             scoreLabel.draw()
         

@@ -1,8 +1,7 @@
 #importy kniznic
 import math
 import random
-from tkinter import CENTER
-from turtle import pos
+
 
 import pyglet
 from pyglet import gl

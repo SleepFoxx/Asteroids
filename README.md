@@ -15,8 +15,11 @@ Here are some instructions to try this game.
 ### Installing 
 
 1. Install required libraries from links down bellow
+
 [Installing pip on different systems](https://pip.pypa.io/en/stable/installation/)
+
 [Installing pyglet on different systems](https://pyglet.readthedocs.io/en/latest/programming_guide/installation.html)
+
 [Installing math on different systems](https://www.codegrepper.com/code-examples/shell/how+to+install+math+module+in+python)
 2. Run 4.py
 3. Enjoy
